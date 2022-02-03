@@ -1,9 +1,9 @@
 import irsdk
 import time
 
-ir = irsdk.IRSDK()  
+ir = irsdk.IRSDK()
 
-# Camera Groups 
+# Camera Groups
 # 0 Stay the same
 # 1 Nose
 # 2 Gearbox
@@ -28,10 +28,9 @@ ir = irsdk.IRSDK()
 # 21 Far Chase
 # 22 Rear Chase
 
-
-ir.startup(dump_to="ello")
+ir.startup(test_file="dump.bin")  #dump_to="dump.bin")
 print(ir["DriverInfo"])
-ir.cam_switch_num(28, 1)
+#ir.cam_switch_num(28, 1)
 # for x in range(23):
 #     ir.cam_switch_num(6,x)
 #     ir.freeze_var_buffer_latest()

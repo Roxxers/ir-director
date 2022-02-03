@@ -1,7 +1,7 @@
 from flask import render_template, Flask, jsonify, request, abort
 import irsdk
 
-ir = irsdk.IRSDK()  
+ir = irsdk.IRSDK()
 app = Flask(__name__)
 
 
@@ -10,37 +10,46 @@ class State:
     ir_connected = False
     last_car_setup_tick = -1
 
+
 # here we check if we are connected to iracing
 # so we can retrieve some data
 def check_iracing():
     if state.ir_connected and not (ir.is_initialized and ir.is_connected):
         state.ir_connected = False
         print('irsdk disconnected')
-    elif not state.ir_connected and ir.startup() and ir.is_initialized and ir.is_connected:
+    elif not state.ir_connected and ir.startup(
+    ) and ir.is_initialized and ir.is_connected:
         state.ir_connected = True
         print('irsdk connected')
 
+
 state = State()
 
-ir.startup()
+ir.startup(test_file="dump.bin")
+
 
 @app.before_request
 def before_request_func():
-    if "api" in request.url:
-        check_iracing()
-        if not state.ir_connected:
-            abort(503)
+    return
+    # if "api" in request.url:
+    #     check_iracing()
+    #     if not state.ir_connected:
+    #         abort(503)
+
 
 @app.route("/")
 def index():
     return render_template('index.html')
 
+
 @app.route("/api/changeview", methods=["POST"])
 def change_camera():
-    driver_num = request.form["driver_number"] or  0 # CANT BE INT DUE TO PADDED 0 CONFLICT
+    driver_num = request.form[
+        "driver_number"] or 0  # CANT BE INT DUE TO PADDED 0 CONFLICT
     camera_group = int(request.form["camera_group"]) or 0
     ir.cam_switch_num(driver_num, camera_group)
     return "", 200
+
 
 @app.route("/ack")
 def heartbeat():
@@ -50,10 +59,9 @@ def heartbeat():
     else:
         return "IRacing Simulator is not running", 503
 
+
 @app.route("/api/session/drivers")
 def driver_info():
-    if not state.ir_connected:
-        return "Not Connected to IRacing", 503
 
     drivers = ir["DriverInfo"]["Drivers"]
     drivers_filtered = []
@@ -77,5 +85,6 @@ def driver_info():
         driver_filtered["UserName"] = driver["UserName"]
         drivers_filtered.append(driver_filtered)
     return jsonify(drivers_filtered)
+
 
 app.run()
