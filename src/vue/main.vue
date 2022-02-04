@@ -56,6 +56,10 @@ export default {
       submitButtonClicked() {
         console.log(`change camera to ${this.selectedCameraGroup} focusing on car #${this.selectedDriverNum}`)
         changeView(this.selectedDriverNum, this.selectedCameraGroup)
+        this.$buefy.toast.open({
+          message: 'Something happened correctly!',
+          type: 'is-success'
+        })
       }
     },
     created() {
@@ -171,6 +175,10 @@ function changeView(car_number, camera_group) {
     body: formData,
     method: "post",
   });
+}
+
+function healthcheck() {
+
 }
 
 </script>
