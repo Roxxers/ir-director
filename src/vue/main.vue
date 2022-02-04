@@ -2,24 +2,31 @@
   <div>
     <div class="columns is-mobile"> 
       <div class="column is-8">
-        <h1 class="title">Drivers</h1>
+        <h1 class="title has-text-centered">Drivers</h1>
         <div class="columns is-multiline is-mobile is-gapless">
           <div class="column is-half" v-for="driver in drivers" v-bind:key="driver.CarIdx">
-            <button v-on:click="driverButtonClicked(driver.CarNumber)" class="button is-fullwidth is-danger is-outlined" :class="carButtonStyling(driver.CarNumber)">#{{ driver.CarNumber }} {{ driver.UserName }}</button>
+            <button v-on:click="driverButtonClicked(driver.CarNumber)" class="button is-fullwidth is-primary is-outlined" :class="carButtonStyling(driver.CarNumber)">#{{ driver.CarNumber }} {{ driver.UserName }}</button>
           </div>
         </div>
       </div>
       <div class="column is-4">
-        <h1 class="title">Cameras</h1>
+        <h1 class="title has-text-centered">Cameras</h1>
         <div class="columns is-multiline is-mobile is-gapless">
           <div class="column is-half" v-for="cameraGroup in cameraGroups" v-bind:key="cameraGroup.id">
-            <button v-on:click="camButtonClicked(cameraGroup.id)" class="button is-fullwidth is-success is-outlined" :class="camButtonStyling(cameraGroup.id)">{{ cameraGroup.name }}</button>
+            <button v-on:click="camButtonClicked(cameraGroup.id)" class="button is-fullwidth is-primary is-outlined" :class="camButtonStyling(cameraGroup.id)">{{ cameraGroup.name }}</button>
           </div>
         </div>
       </div>
     </div>
     <div class="container submitButtonContainer">
-      <button v-on:click="submitButtonClicked" class="button is-fullwidth is-warning">SUBMIT</button>
+      <button  
+        v-on:click="submitButtonClicked"
+        class="button is-fullwidth" 
+        :class="submitButtonStyling()"
+        :disabled="!this.isConnected"
+      >
+        {{ submitButtonText() }}
+      </button >
     </div>
   </div>
 </template>
@@ -30,9 +37,11 @@ export default {
     data() {
       return {
         drivers: null,
-        selectedDriverNum: null,
-        selectedCameraGroup: null,
-        cameraGroups: cameraGroups
+        selectedDriverNum: 0,
+        selectedCameraGroup: 0,
+        cameraGroups: cameraGroups,
+        isConnected: false,
+        driverCheckInterval: null
       }
     },
     methods: {
@@ -46,6 +55,19 @@ export default {
           "is-focused": num == this.selectedCameraGroup
         }
       },
+      submitButtonStyling() {
+        return {
+          "is-success": this.isConnected,
+          "is-danger": this.isConnected === false
+        }
+      },
+      submitButtonText() {
+        if (this.isConnected) {
+          return "Submit"
+        } else {
+          return "Not Connected"
+        }
+      },
       camButtonClicked(num) {
         this.selectedCameraGroup = num
         this.$forceUpdate()
@@ -55,20 +77,39 @@ export default {
         this.$forceUpdate()
       },
       submitButtonClicked() {
-        console.log(`change camera to ${this.selectedCameraGroup} focusing on car #${this.selectedDriverNum}`)
-        changeView(this.selectedDriverNum, this.selectedCameraGroup)
-        this.$buefy.toast.open({
-          message: 'Something happened correctly!',
-          type: 'is-success'
+        if (this.isConnected) {
+          console.log(`change camera to ${this.selectedCameraGroup} focusing on car #${this.selectedDriverNum}`)
+          changeView(this.selectedDriverNum, this.selectedCameraGroup)
+          this.$buefy.toast.open({
+            message: 'Camera Changed!',
+            type: 'is-success'
+          })
+        }
+      },
+      healthcheck() {
+        fetch("/ack").then(res => {
+            return res.json()
+          }
+        ).then(ack => {
+          if (ack.connected === true && this.isConnected === false) {
+            this.isConnected =  true
+            getDrivers().then(drivers => {this.drivers = drivers})
+            this.driverCheckInterval = setInterval(() => {
+              getDrivers().then(drivers => {this.drivers = drivers})
+            }, 30000);
+          } else if (!ack.connected && this.isConnected) {
+            this.isConnected = false
+            this.drivers = []
+            closeInterval(this.driverCheckInterval)
+          }
         })
       }
     },
     created() {
-      getDrivers().then(drivers => {this.drivers = drivers})
-      console.log(this.drivers)
+      this.healthcheck()
       setInterval(() => {
-        getDrivers().then(drivers => {this.drivers = drivers})
-      }, 30000);
+        this.healthcheck()
+      }, 2000);
     },
 }
 
@@ -159,13 +200,11 @@ const cameraGroups = [
   },
 ]
 
-
 async function getDrivers() {
   const res = await fetch("/api/session/drivers")
   const data = await res.json()
   return data;
 }
-
 
 function changeView(car_number, camera_group) {
   // Build formData object.
@@ -176,10 +215,6 @@ function changeView(car_number, camera_group) {
     body: formData,
     method: "post",
   });
-}
-
-function healthcheck() {
-
 }
 
 </script>

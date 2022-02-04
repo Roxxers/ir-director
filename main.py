@@ -28,7 +28,8 @@ ir = irsdk.IRSDK()
 # 21 Far Chase
 # 22 Rear Chase
 
-ir.startup(test_file="dump.bin")  #dump_to="dump.bin")
+ir.startup()  #dump_to="dump.bin")
+ir.parse_to("dump2.txt")
 print(ir["DriverInfo"])
 #ir.cam_switch_num(28, 1)
 # for x in range(23):

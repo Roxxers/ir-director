@@ -1,2 +1,5 @@
 
-sass: sass src/sass/main.scss static/css/main.css
+build: 
+	npm run build --prefix "./src/"
+watch: 
+	npm run watch --prefix "./src/"

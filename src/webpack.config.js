@@ -9,6 +9,7 @@ module.exports = {
     filename: 'index.js',
     path: path.resolve(__dirname, "../static/js/"),
   },
+  mode: "production",
   module: {
     rules: [
       {

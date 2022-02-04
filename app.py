@@ -16,25 +16,24 @@ class State:
 def check_iracing():
     if state.ir_connected and not (ir.is_initialized and ir.is_connected):
         state.ir_connected = False
+        ir.shutdown()
         print('irsdk disconnected')
-    elif not state.ir_connected and ir.startup(
-    ) and ir.is_initialized and ir.is_connected:
+    elif not state.ir_connected and ir.startup() and ir.is_connected:
         state.ir_connected = True
         print('irsdk connected')
 
 
 state = State()
 
-ir.startup(test_file="dump.bin")
+ir.startup()
 
 
 @app.before_request
 def before_request_func():
-    return
-    # if "api" in request.url:
-    #     check_iracing()
-    #     if not state.ir_connected:
-    #         abort(503)
+    if "api" in request.url:
+        check_iracing()
+        if not state.ir_connected:
+            abort(503)
 
 
 @app.route("/")
@@ -55,9 +54,15 @@ def change_camera():
 def heartbeat():
     check_iracing()
     if state.ir_connected:
-        return "IRacing Simulator is running", 200
+        return jsonify({
+            "message": "IRacing Simulator is running",
+            "connected": True
+        })
     else:
-        return "IRacing Simulator is not running", 503
+        return jsonify({
+            "message": "IRacing Simulator is not running",
+            "connected": False
+        })
 
 
 @app.route("/api/session/drivers")
@@ -86,5 +91,5 @@ def driver_info():
         drivers_filtered.append(driver_filtered)
     return jsonify(drivers_filtered)
 
-
-app.run()
+if __name__ == "__main__":
+    app.run()
