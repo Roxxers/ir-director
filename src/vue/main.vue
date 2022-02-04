@@ -26,6 +26,7 @@
 
 <script>
 export default {
+    name: "controls",
     data() {
       return {
         drivers: null,

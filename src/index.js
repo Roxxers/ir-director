@@ -4,6 +4,5 @@ import Main from './vue/main.vue';
 
 Vue.use(Toast)
 
-const vm = new Vue(Main).$mount("#vm")
-
+new Vue(Main).$mount("#vm")
 
