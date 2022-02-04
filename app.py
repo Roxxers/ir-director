@@ -1,15 +1,21 @@
 from flask import render_template, Flask, jsonify, request, abort
 import irsdk
+from threading import Thread
+
+
+NAME = "IRacing Director"
 
 ir = irsdk.IRSDK()
-app = Flask(__name__)
-
+app = Flask(NAME)
 
 # this is our State class, with some helpful variables
 class State:
     ir_connected = False
     last_car_setup_tick = -1
 
+state = State()
+
+ir.startup()
 
 # here we check if we are connected to iracing
 # so we can retrieve some data
@@ -21,11 +27,6 @@ def check_iracing():
     elif not state.ir_connected and ir.startup() and ir.is_connected:
         state.ir_connected = True
         print('irsdk connected')
-
-
-state = State()
-
-ir.startup()
 
 
 @app.before_request
