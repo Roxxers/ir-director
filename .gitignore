@@ -6,7 +6,7 @@ __pycache__
 */node_modules
 static/js/index.js
 *.min.css
-+requirements.txt
+!requirements.txt
 dist/
 build/  
 *venv/
