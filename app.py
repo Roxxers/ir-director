@@ -1,21 +1,26 @@
 from flask import render_template, Flask, jsonify, request, abort
 import irsdk
 from threading import Thread
-
+import webbrowser
 
 NAME = "IRacing Director"
 
 ir = irsdk.IRSDK()
 app = Flask(NAME)
+port = 18398
+url = "http://localhost:%d" % port
+
 
 # this is our State class, with some helpful variables
 class State:
     ir_connected = False
     last_car_setup_tick = -1
 
+
 state = State()
 
 ir.startup()
+
 
 # here we check if we are connected to iracing
 # so we can retrieve some data
@@ -66,9 +71,14 @@ def heartbeat():
         })
 
 
+@app.route("/api/session/cameras")
+def camera_groups():
+    cameras = ir["CameraInfo"]["Groups"]
+    return jsonify(cameras)
+
+
 @app.route("/api/session/drivers")
 def driver_info():
-
     drivers = ir["DriverInfo"]["Drivers"]
     drivers_filtered = []
     for driver in drivers:
@@ -92,5 +102,8 @@ def driver_info():
         drivers_filtered.append(driver_filtered)
     return jsonify(drivers_filtered)
 
+
 if __name__ == "__main__":
-    app.run()
+    webbrowser.open(url)
+    app.run(host="localhost", port=18398)
+    input()

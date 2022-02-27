@@ -12,8 +12,8 @@
       <div class="column is-4">
         <h1 class="title has-text-centered">Cameras</h1>
         <div class="columns is-multiline is-mobile is-gapless">
-          <div class="column is-half" v-for="cameraGroup in cameraGroups" v-bind:key="cameraGroup.id">
-            <button v-on:click="camButtonClicked(cameraGroup.id)" class="button is-fullwidth is-primary is-outlined" :class="camButtonStyling(cameraGroup.id)">{{ cameraGroup.name }}</button>
+          <div class="column is-half" v-for="cameraGroup in cameraGroups" v-bind:key="cameraGroup.GroupNum">
+            <button v-on:click="camButtonClicked(cameraGroup.GroupNum)" class="button is-fullwidth is-primary is-outlined" :class="camButtonStyling(cameraGroup.GroupNum)">{{ cameraGroup.GroupName }}</button>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@ export default {
         drivers: null,
         selectedDriverNum: 0,
         selectedCameraGroup: 0,
-        cameraGroups: cameraGroups,
+        cameraGroups: null,
         isConnected: false,
         driverCheckInterval: null
       }
@@ -94,12 +94,14 @@ export default {
           if (ack.connected === true && this.isConnected === false) {
             this.isConnected =  true
             getDrivers().then(drivers => {this.drivers = drivers})
+            getCameras().then(cameraGroups => {this.cameraGroups = cameraGroups})
             this.driverCheckInterval = setInterval(() => {
               getDrivers().then(drivers => {this.drivers = drivers})
             }, 30000);
           } else if (!ack.connected && this.isConnected) {
             this.isConnected = false
             this.drivers = []
+            this.cameraGroups = []
             closeInterval(this.driverCheckInterval)
           }
         })
@@ -113,95 +115,15 @@ export default {
     },
 }
 
-const cameraGroups = [
-  {
-    id: 1,
-    name: "Nose"
-  },
-  {
-    id: 2,
-    name: "Gearbox"
-  },
-  {
-    id: 3,
-    name: "Roll Bar"
-  },
-  {
-    id: 4,
-    name: "LF Susp"
-  },
-  {
-    id: 5,
-    name: "LR Susp"
-  },
-  {
-    id: 6,
-    name: "Gyro"
-  },
-  {
-    id: 7,
-    name: "RF Susp"
-  },
-  {
-    id: 8,
-    name: "RR Susp"
-  },
-  {
-    id: 9,
-    name: "Cockpit"
-  },
-  {
-    id: 10,
-    name: "Scenic"
-  },
-  {
-    id: 11,
-    name: "TV3"
-  },
-  {
-    id: 12,
-    name: "TV1"
-  },
-  {
-    id: 14,
-    name: "TV Static"
-  },
-  {
-    id: 15,
-    name: "TV Mixed"
-  },
-  {
-    id: 16,
-    name: "Pit Lane"
-  },
-  {
-    id: 17,
-    name: "Pit Lane 2"
-  },
-  {
-    id: 18,
-    name: "Blimp"
-  },
-  {
-    id: 19,
-    name: "Chopper"
-  },
-  {
-    id: 20,
-    name: "Chase"
-  },
-  {
-    id: 21,
-    name: "Far Chase"
-  },
-  {
-    id: 22,
-    name: "Rear Chase"
-  },
-]
 
 async function getDrivers() {
   const res = await fetch("/api/session/drivers")
+  const data = await res.json()
+  return data;
+}
+
+async function getCameras() {
+  const res = await fetch("/api/session/cameras")
   const data = await res.json()
   return data;
 }

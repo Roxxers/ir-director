@@ -28,9 +28,9 @@ ir = irsdk.IRSDK()
 # 21 Far Chase
 # 22 Rear Chase
 
-ir.startup()  #dump_to="dump.bin")
-ir.parse_to("dump2.txt")
-print(ir["DriverInfo"])
+ir.startup(test_file="dump.bin")  #dump_to="dump.bin")
+# ir.parse_to("dump3.txt")
+print(ir["CameraInfo"]["Groups"])
 #ir.cam_switch_num(28, 1)
 # for x in range(23):
 #     ir.cam_switch_num(6,x)
